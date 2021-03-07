@@ -1,9 +1,9 @@
 version: '2'
 
 volumes:
-  site:
-  db:
-    driver: local
+    site:
+    db:
+        driver: local
 
 
 services:
@@ -19,6 +19,8 @@ services:
             - memcached
         networks:
             - bitrix
+        extra_hosts:
+            - "${PROJECT}:10.100.0.88"
         restart: always
     web_server:
         build: ./${WEB_SERVER_TYPE}
@@ -32,8 +34,9 @@ services:
             - '${INTERFACE}:443:443'
         links:
             - php
-        networks: 
-            - bitrix
+        networks:
+            bitrix:
+                ipv4_address: "10.100.0.88"
         restart: always
     db:
         build: ./${DB_SERVER_TYPE}
@@ -83,7 +86,7 @@ services:
             - db:/var/lib/mysql
             - ./data/memcached:/var/lib/memcached
             - ./www/html:/var/www/html
-            - ${SITE_PATH}:/var/www/bitrix
+            - ${SITE_PATH}:/var/www/${PROJECT}/bitrix
             - /etc/localtime:/etc/localtime/:ro
         networks:
             - bitrix
