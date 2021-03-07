@@ -20,7 +20,7 @@ services:
         networks:
             - bitrix
         extra_hosts:
-            - "${PROJECT}:10.100.0.88"
+            - "${PROJECT}:${SUBNET_MASK}.88"
         restart: always
     web_server:
         build: ./${WEB_SERVER_TYPE}
@@ -36,7 +36,7 @@ services:
             - php
         networks:
             bitrix:
-                ipv4_address: "10.100.0.88"
+                ipv4_address: "${SUBNET_MASK}.88"
         restart: always
     db:
         build: ./${DB_SERVER_TYPE}
@@ -96,4 +96,4 @@ networks:
         ipam:
             driver: default
             config:
-                - subnet: 10.100.0.0/24
+                - subnet: ${SUBNET_MASK}.0/24
