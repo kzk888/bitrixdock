@@ -4,7 +4,7 @@ server {
 
     server_name #SITE_NAME# www.#SITE_NAME#;
     charset utf-8;
-    set $root_path #SITE_PATH#;
+    set $root_path "#SITE_PATH#";
     root $root_path;
     index index.php index.html bitrixsetup.php restore.php;
 
