@@ -34,6 +34,8 @@ services:
             - '${INTERFACE}:443:443'
         links:
             - php
+        environment:
+            VIRTUAL_HOST: ${PROJECT}
         networks:
             bitrix:
                 ipv4_address: "${SUBNET_MASK}.88"
@@ -91,6 +93,9 @@ services:
         networks:
             - bitrix
 networks:
+    default:
+        external:
+            name: nginx-proxy
     bitrix:
         driver: bridge
         ipam:
