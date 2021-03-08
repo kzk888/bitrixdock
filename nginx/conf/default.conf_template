@@ -4,8 +4,7 @@ server {
 
     server_name #SITE_NAME# www.#SITE_NAME#;
     charset utf-8;
-    set $root_path "#SITE_PATH#";
-    root $root_path;
+    root #SITE_PATH#;
     index index.php index.html bitrixsetup.php restore.php;
 
     access_log /var/log/nginx/#SITE_NAME#-access.log;
@@ -28,20 +27,20 @@ server {
     }
 
     location / {
-        if (-f $root_path/index.php) {
-            root $root_path;
+        if (-f #SITE_PATH#/index.php) {
+            root #SITE_PATH#;
             break;
         }
-        if (-f $root_path/bitrixsetup.php) {
-            root $root_path;
+        if (-f #SITE_PATH#/bitrixsetup.php) {
+            root #SITE_PATH#;
             break;
         }
-        if (-f $root_path/restore.php) {
-            root $root_path;
+        if (-f #SITE_PATH#/restore.php) {
+            root #SITE_PATH#;
             break;
         }
         try_files $uri $uri/ @bitrix;
-        root  $root_path;
+        root  #SITE_PATH#;
     }
 
     location @bitrix {
