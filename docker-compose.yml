@@ -89,7 +89,7 @@ services:
             - ./logs/php:/var/log/php
             - ./logs/db:/var/log/mysql
             - ./logs/memcached:/var/log/memcached
-            - db:/var/lib/mysql
+            - "${PROJECT}/db/:/var/lib/mysql"
             - ./data/memcached:/var/lib/memcached
             - ./www/html:/var/www/html
             - ${SITE_PATH}:/var/www/${PROJECT}/bitrix
