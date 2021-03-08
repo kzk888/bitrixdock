@@ -1,15 +1,9 @@
 version: '2'
 
-networks:
-    default:
-        external:
-            name: nginx-proxy
-    bitrix:
-        driver: bridge
-        ipam:
-            driver: default
-            config:
-                - subnet: ${SUBNET_MASK}.0/24
+volumes:
+  site:
+  db:
+    driver: local
 
 services:
     php:
@@ -18,7 +12,7 @@ services:
         volumes_from:
             - source
         ports:
-            - '127.0.0.1:${PHP_PORT}:9000'
+            - '${INTERFACE}:9000:9000'
         links:
             - db
             - memcached
@@ -27,6 +21,7 @@ services:
         extra_hosts:
             - "${PROJECT}:${SUBNET_MASK}.88"
         restart: always
+
     web_server:
         build: ./${WEB_SERVER_TYPE}
         container_name: ${PROJECT}webserver
@@ -34,15 +29,13 @@ services:
             - source
         volumes_from:
             - source
+        ports:
+            - '${INTERFACE}:80:80'
+            - '${INTERFACE}:443:443'
         links:
             - php
-        environment:
-            - VIRTUAL_HOST=${PROJECT}
-            - LETSENCRYPT_HOST=${PROJECT}
-            - LETSENCRYPT_EMAIL="ms@webbs.kz"
         networks:
-            bitrix:
-                ipv4_address: "${SUBNET_MASK}.88"
+            - bitrix
         restart: always
     db:
         build: ./${DB_SERVER_TYPE}
@@ -50,7 +43,7 @@ services:
         volumes_from:
             - source
         ports:
-            - '${INTERFACE}:${MYSQL_PORT}:3306'
+            - '${INTERFACE}:3306:3306'
         environment:
             MYSQL_DATABASE: ${MYSQL_DATABASE}
             MYSQL_USER: ${MYSQL_USER}
@@ -66,7 +59,7 @@ services:
         volumes_from:
             - source
         ports:
-            - '${INTERFACE}:${MEMCACHED_PORT}:11211'
+            - '${INTERFACE}:11211:11211'
         networks:
             - bitrix
         restart: always
@@ -76,7 +69,7 @@ services:
         links:
             - db:db
         ports:
-            - '${INTERFACE}:${ADMINER_PORT}:80'
+            - '${INTERFACE}:8080:80'
         environment:
             UPLOAD: 1024M # upload_max_filesize, post_max_size
         networks:
@@ -89,10 +82,17 @@ services:
             - ./logs/php:/var/log/php
             - ./logs/db:/var/log/mysql
             - ./logs/memcached:/var/log/memcached
-            - ./db:/var/lib/mysql
+            - db:/var/lib/mysql
             - ./data/memcached:/var/lib/memcached
             - ./www/html:/var/www/html
-            - ${SITE_PATH}:/var/www/${PROJECT}/bitrix
+            - ${SITE_PATH}:/var/www/bitrix
             - /etc/localtime:/etc/localtime/:ro
         networks:
             - bitrix
+networks:
+    bitrix:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: ${SUBNET_MASK}.0/24
