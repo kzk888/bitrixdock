@@ -12,14 +12,14 @@ services:
         volumes_from:
             - source
         ports:
-            - '${INTERFACE}:9000:9000'
+            - '127.0.0.1:9000:9000'
         links:
             - db
             - memcached
         networks:
             - bitrix
         extra_hosts:
-            - "${PROJECT}:${SUBNET_MASK}.88"
+            - "${PROJECT}:10.100.0.88"
         restart: always
 
     web_server:
@@ -95,4 +95,4 @@ networks:
         ipam:
             driver: default
             config:
-                - subnet: ${SUBNET_MASK}.0/24
+                - subnet: 10.100.0.0/24
