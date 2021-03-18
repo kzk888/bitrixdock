@@ -97,14 +97,14 @@ services:
         #mem_limit: 3g
         cap_add:
             - IPC_LOCK
-        #healthcheck:
-        #    test: curl -s https://127.0.0.1:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-        #    interval: 30s
-        #    timeout: 10s
-        #    retries: 5
+        healthcheck:
+            test: curl -s https://127.0.0.1:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+            interval: 30s
+            timeout: 10s
+            retries: 5
         volumes:
-          - /data/esdata:/usr/share/elasticsearch/data
-          - ./analysis:/usr/share/elasticsearch/config/analysis
+            - /data/esdata:/usr/share/elasticsearch/data
+            #- ./analysis:/usr/share/elasticsearch/config/analysis
         logging:
             driver: "json-file"
             options:
