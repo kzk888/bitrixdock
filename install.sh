@@ -103,9 +103,6 @@ then
     cd $DOCKER_FOLDER_PATH
     echo -e "\e[32mRun DOCKER \e[39m\n"
     docker-compose up -d
-
-    echo -e "\e[33mEnter MYSQL database ROOT PASSWORD: \e[39m"
-    read MYSQL_DATABASE_ROOT_PASSWORD
   fi
 
   #checking site name domain
@@ -142,7 +139,8 @@ then
     echo -e "\e[33mCreating website folder \e[39m"
     mkdir -p $WEBSITE_FILES_PATH && \
     cd $WEBSITE_FILES_PATH && \
-    if [[ $INSTALLATION_TYPE == "C" ]]; then wget http://www.1c-bitrix.ru/download/scripts/bitrixsetup.php; elif [[ $INSTALLATION_TYPE == "R" ]]; then wget http://www.1c-bitrix.ru/download/scripts/restore.php; fi
+    if [[ $INSTALLATION_TYPE == "C" ]]; then wget http://www.1c-bitrix.ru/download/scripts/bitrixsetup.php; elif [[ $INSTALLATION_TYPE == "R" ]]; then wget http://www.1c-bitrix.ru/download/scripts/restore.php; fi && \
+    cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/
 
     echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
     cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
@@ -196,6 +194,17 @@ then
   else
     rm -rf $WEBSITE_FILES_PATH
     echo -e "\e[32mWebsite folder removed \e[39m\n"
+
+    DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
+    rm -rf $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf
+
+    cd $DOCKER_FOLDER_PATH && \
+    docker-compose stop web_server && \
+    docker-compose rm -f web_server && \
+    docker-compose build web_server && \
+    docker-compose up -d
+
+    echo -e "\e[32mWebsite nginx conf removed \e[39m\n"
 
     PROJECT_CLEARED_NAME=${SITE_NAME%*.*} && echo $output | tr '.' '_' | tr '-' '_'
     DATABASE_NAME=$PROJECT_CLEARED_NAME"_db"

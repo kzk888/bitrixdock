@@ -1,6 +1,6 @@
 server {
-    listen 80 deferred reuseport default;
-    listen [::]:80 deferred reuseport default;
+    listen 80;
+    #listen [::]:80 deferred reuseport default;
 
     server_name #SITE_NAME# www.#SITE_NAME#;
     charset utf-8;
