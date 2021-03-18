@@ -74,7 +74,7 @@ fi
 WEBSITE_FILES_PATH=$WORK_PATH/bitrix/$SITE_NAME
 if [ ! -d "$WEBSITE_FILES_PATH" ]
 then
-	echo -e "\e[33mCreating website folder and downloading docker-compose sources \e[39m"
+	echo -e "\e[33mCreating website folder \e[39m"
 	mkdir -p $WEBSITE_FILES_PATH && \
 	cd $WEBSITE_FILES_PATH && \
 	if [[ $INSTALLATION_TYPE == "C" ]]; then wget http://www.1c-bitrix.ru/download/scripts/bitrixsetup.php; elif [[ $INSTALLATION_TYPE == "R" ]]; then wget http://www.1c-bitrix.ru/download/scripts/restore.php; fi
@@ -87,7 +87,7 @@ then
 		cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/ && \
 		cd $DOCKER_FOLDER_PATH
 
-		echo -e "\n\e[33mCopying environment setting file and launch autoconfiguration \e[39m"
+		echo -e "\n\e[33mDownloading docker-compose sources, copying environment setting file and starting configuration \e[39m"
 		cp -f .env_template .env && \
 		echo -e "\e[32mDone \e[39m\n"
 
@@ -106,6 +106,34 @@ then
 			SELECTED_PHP_VERSION=php74
 		fi
 		sed -i "s/#PHP_VERSION#/$SELECTED_PHP_VERSION/g" $DOCKER_FOLDER_PATH/.env
+
+		# set database root password
+		echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
+		read MYSQL_DATABASE_ROOT_PASSWORD
+		until [[ ! -z "$MYSQL_DATABASE_ROOT_PASSWORD" ]]
+		do
+		    echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
+			read MYSQL_DATABASE_ROOT_PASSWORD
+		done
+		sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
+
+		# elastic search
+		echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
+		read ELASTIC_SEARCH_CHOOSE
+		until [[ $ELASTIC_SEARCH_CHOOSE != "Y" || $ELASTIC_SEARCH_CHOOSE != "N" ]]
+		do
+		    echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
+		    read ELASTIC_SEARCH_CHOOSE
+		done
+		sed -i "s/#ELASTIC_SEARCH#/$ELASTIC_SEARCH_CHOOSE/g" $DOCKER_FOLDER_PATH/.env
+
+		###########################################################
+
+		echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
+		cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+		sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+		sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+		echo -e "\e[32mDone \e[39m\n"
 
 		# set database name
 		echo -e "\e[33mSet MYSQL database name: \e[39m"
@@ -136,32 +164,6 @@ then
 			read MYSQL_DATABASE_USER_PASSWORD
 		done
 		sed -i "s/#DATABASE_USER_PASSWORD#/$MYSQL_DATABASE_USER_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
-
-		# set database root password
-		echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
-		read MYSQL_DATABASE_ROOT_PASSWORD
-		until [[ ! -z "$MYSQL_DATABASE_ROOT_PASSWORD" ]]
-		do
-		    echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
-			read MYSQL_DATABASE_ROOT_PASSWORD
-		done
-		sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
-
-		# elastic search
-		echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
-		read ELASTIC_SEARCH_CHOOSE
-		until [[ $ELASTIC_SEARCH_CHOOSE != "Y" || $ELASTIC_SEARCH_CHOOSE != "N" ]]
-		do
-		    echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
-		    read ELASTIC_SEARCH_CHOOSE
-		done
-		sed -i "s/#ELASTIC_SEARCH#/$ELASTIC_SEARCH_CHOOSE/g" $DOCKER_FOLDER_PATH/.env
-
-		echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
-		cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		echo -e "\e[32mDone \e[39m\n"
 
 		echo -e "\e[32mRun DOCKER \e[39m"
 		docker-compose up -d
