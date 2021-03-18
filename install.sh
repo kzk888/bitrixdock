@@ -44,8 +44,56 @@ fi
 #show message that all required packets installed
 echo -e "\n\e[32mAll required packets installed \e[39m\n\n"
 
+DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
+if [ ! -d "$DOCKER_FOLDER_PATH" ]
+then
+  echo -e "\e[33mDocker containers is not installed. Installation starting... \e[39m\n"
+
+  cd $WORK_PATH && \
+  git clone https://github.com/kzk888/bitrixdock.git && \
+  cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/ && \
+  cd $DOCKER_FOLDER_PATH
+
+  echo -e "\n\e[33mDownloading docker-compose sources, copying environment setting file and starting configuration \e[39m"
+  cp -f .env_template .env && \
+  echo -e "\e[32mDone \e[39m\n"
+
+  # chosing PHP version
+  echo -e "\e[33mSelect PHP version [5.6, 7.1, 7.4]: \e[39m"
+  read PHP_VERSION
+  until [[ $PHP_VERSION != "5.6" || $PHP_VERSION != "7.1" || $PHP_VERSION != "7.4" ]]
+  do
+      echo -e "\e[33mSelect PHP version [5.6, 7.1, 7.4]: \e[39m"
+      read PHP_VERSION
+  done
+  SELECTED_PHP_VERSION=php71
+  if [[ $PHP_VERSION == "5.6" ]]; then
+    SELECTED_PHP_VERSION=php56
+  elif [[ $PHP_VERSION == "7.4" ]]; then
+    SELECTED_PHP_VERSION=php74
+  fi
+  sed -i "s/#PHP_VERSION#/$SELECTED_PHP_VERSION/g" $DOCKER_FOLDER_PATH/.env
+
+  # set database root password
+  echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
+  read MYSQL_DATABASE_ROOT_PASSWORD
+  until [[ ! -z "$MYSQL_DATABASE_ROOT_PASSWORD" ]]
+  do
+      echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
+    read MYSQL_DATABASE_ROOT_PASSWORD
+  done
+  sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
+
+  echo -e "\e[32mRun DOCKER \e[39m\n"
+  docker-compose up -d
+else
+  cd $DOCKER_FOLDER_PATH
+  echo -e "\e[32mRun DOCKER \e[39m\n"
+  docker-compose up -d
+fi
+
 #checking site name domain
-echo -e "\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
+echo -e "\n\n\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
 read SITE_NAME
 
 domainRegex="(^([a-zA-Z0-9](([a-zA-Z0-9-]){0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{0,10}$)"
@@ -79,51 +127,17 @@ then
 	cd $WEBSITE_FILES_PATH && \
 	if [[ $INSTALLATION_TYPE == "C" ]]; then wget http://www.1c-bitrix.ru/download/scripts/bitrixsetup.php; elif [[ $INSTALLATION_TYPE == "R" ]]; then wget http://www.1c-bitrix.ru/download/scripts/restore.php; fi
 
-	DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
-	if [ ! -d "$DOCKER_FOLDER_PATH" ]
-	then
-		cd $WORK_PATH && \
-		git clone https://github.com/kzk888/bitrixdock.git && \
-		cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/ && \
-		cd $DOCKER_FOLDER_PATH
+  echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
+  cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+  sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+  sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+  echo -e "\e[32mDone \e[39m\n"
 
-		echo -e "\n\e[33mDownloading docker-compose sources, copying environment setting file and starting configuration \e[39m"
-		cp -f .env_template .env && \
-		echo -e "\e[32mDone \e[39m\n"
-
-		# chosing PHP version
-		echo -e "\e[33mSelect PHP version [5.6, 7.1, 7.4]: \e[39m"
-		read PHP_VERSION
-		until [[ $PHP_VERSION != "5.6" || $PHP_VERSION != "7.1" || $PHP_VERSION != "7.4" ]]
-		do
-		    echo -e "\e[33mSelect PHP version [5.6, 7.1, 7.4]: \e[39m"
-		    read PHP_VERSION
-		done
-		SELECTED_PHP_VERSION=php71
-		if [[ $PHP_VERSION == "5.6" ]]; then
-			SELECTED_PHP_VERSION=php56
-		elif [[ $PHP_VERSION == "7.4" ]]; then
-			SELECTED_PHP_VERSION=php74
-		fi
-		sed -i "s/#PHP_VERSION#/$SELECTED_PHP_VERSION/g" $DOCKER_FOLDER_PATH/.env
-
-		# set database root password
-		echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
-		read MYSQL_DATABASE_ROOT_PASSWORD
-		until [[ ! -z "$MYSQL_DATABASE_ROOT_PASSWORD" ]]
-		do
-		    echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
-			read MYSQL_DATABASE_ROOT_PASSWORD
-		done
-		sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
-
-		###########################################################
-
-		echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
-		cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-		echo -e "\e[32mDone \e[39m\n"
+  cd $DOCKER_FOLDER_PATH && \
+  docker-compose stop web_server && \
+  docker-compose rm web_server -f && \
+  docker-compose build web_server && \
+  docker-compose up -d
 
 #		# set database name
 #		echo -e "\e[33mSet MYSQL database name: \e[39m"
@@ -154,12 +168,6 @@ then
 #			read MYSQL_DATABASE_USER_PASSWORD
 #		done
 #		sed -i "s/#DATABASE_USER_PASSWORD#/$MYSQL_DATABASE_USER_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
-
-		echo -e "\e[32mRun DOCKER \e[39m"
-		docker-compose up -d
-	else
-		echo "bitrixdock folder exist"
-	fi
 else
 	echo -e "\e[31m    By path $WEBSITE_FILES_PATH website exist. Please remove folder and restart installation script. \e[39m"
 fi
