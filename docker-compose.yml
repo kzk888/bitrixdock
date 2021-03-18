@@ -128,6 +128,28 @@ services:
             UPLOAD: 1024M # upload_max_filesize, post_max_size
         networks:
             - bitrix
+    #sphinx:
+    #    image: registry.gitlab.com/vitams/docker.my-site.ru/sphinx:${HASH}
+    #    links:
+    #      - mysql
+    #    depends_on:
+    #      - mysql
+    #    volumes:
+    #        - /etc/localtime:/etc/localtime:ro
+    #    networks:
+    #        - bitrix
+    #    restart: unless-stopped
+    #smtp:
+    #    image: registry.gitlab.com/vitams/docker.my-site.ru/smtp:${HASH}
+    #    environment:
+    #        MAILNAME: "bitrix"
+    #        RELAY_NETWORKS: ":10.100.0.0/24"
+    #        IGNORE_LIMITS: "true"
+    #    volumes:
+    #        - /etc/localtime:/etc/localtime:ro
+    #    networks:
+    #        - bitrix
+    #    restart: unless-stopped
     source:
         image: alpine:latest
         container_name: ${PROJECT}source
