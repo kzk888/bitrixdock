@@ -147,6 +147,16 @@ then
 		done
 		sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
 
+		# elastic search
+		echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
+		read ELASTIC_SEARCH_CHOOSE
+		until [[ $ELASTIC_SEARCH_CHOOSE != "Y" || $ELASTIC_SEARCH_CHOOSE != "N" ]]
+		do
+		    echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
+		    read ELASTIC_SEARCH_CHOOSE
+		done
+		sed -i "s/#ELASTIC_SEARCH#/$ELASTIC_SEARCH_CHOOSE/g" $DOCKER_FOLDER_PATH/.env
+
 		echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
 		cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
 		sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \

@@ -63,6 +63,61 @@ services:
         networks:
             - bitrix
         restart: always
+    {% if ELASTIC_SEARCH=='Y' %}
+    es:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+        container_name: ${PROJECT}es
+        restart: unless-stopped
+        ports:
+        - 9200:9200
+        - 9300:9300
+        environment:
+            - cluster.name=web
+            - node.name=${PROJECT}es
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - http.cors.allow-origin=*
+            - http.cors.enabled=true
+
+    #        - xpack.security.enabled=false
+    #        - xpack.monitoring.enabled=false
+    #        - xpack.graph.enabled=false
+    #        - xpack.watcher.enabled=false
+            - discovery.type=single-node
+    #        - discovery.type=zen
+    #        - cluster.initial_master_nodes=${PROJECT}es
+    #        - discovery.zen.ping.unicast.hosts=192.168.101.77
+           #- network.host=172.20.1.1
+    #        - transport.publish_host=192.168.101.96
+            - node.master=true
+            - node.data=true
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        #mem_limit: 3g
+        cap_add:
+            - IPC_LOCK
+        healthcheck:
+            test: curl -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        volumes:
+          - /mnt/data/esdata1:/usr/share/elasticsearch/data
+          - ./analysis:/usr/share/elasticsearch/config/analysis
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "10"
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 10
+                window: 120s
+    {% endif %}
     adminer:
         image: dockette/adminer:full
         container_name: ${PROJECT}adminer
