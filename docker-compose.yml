@@ -38,6 +38,7 @@ services:
             - bitrix
         restart: always
     certbot:
+        container_name: ${PROJECT}certbot
         image: certbot/certbot
         volumes:
           - ./data/certbot/conf:/etc/letsencrypt
