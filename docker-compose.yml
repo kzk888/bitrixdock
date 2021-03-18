@@ -68,8 +68,8 @@ services:
         container_name: ${PROJECT}es
         restart: unless-stopped
         ports:
-        - '${INTERFACE}:9200:9200'
-        - '${INTERFACE}:9300:9300'
+        - '127.0.0.1:9200:9200'
+        - '127.0.0.1:9300:9300'
         environment:
             - cluster.name=web
             - node.name=${PROJECT}es
@@ -98,7 +98,7 @@ services:
         cap_add:
             - IPC_LOCK
         healthcheck:
-            test: curl -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+            test: curl -s https://127.0.0.1:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
             interval: 30s
             timeout: 10s
             retries: 5
