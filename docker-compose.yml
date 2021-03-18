@@ -37,6 +37,11 @@ services:
         networks:
             - bitrix
         restart: always
+    certbot:
+        image: certbot/certbot
+        volumes:
+          - ./data/certbot/conf:/etc/letsencrypt
+          - ./data/certbot/www:/var/www/certbot
     db:
         build: ./${DB_SERVER_TYPE}
         container_name: ${PROJECT}db
