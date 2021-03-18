@@ -103,7 +103,7 @@ services:
             timeout: 10s
             retries: 5
         volumes:
-            - /mnt/data/esdata:/usr/share/elasticsearch/data
+            - ./data/esdata:/var/lib/elasticsearch/esdata
             #- ./analysis:/usr/share/elasticsearch/config/analysis
         logging:
             driver: "json-file"
