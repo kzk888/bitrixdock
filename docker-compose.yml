@@ -68,8 +68,8 @@ services:
         container_name: ${PROJECT}es
         restart: unless-stopped
         ports:
-        - 9200:9200
-        - 9300:9300
+        - '${INTERFACE}:9200:9200'
+        - '${INTERFACE}:9300:9300'
         environment:
             - cluster.name=web
             - node.name=${PROJECT}es
