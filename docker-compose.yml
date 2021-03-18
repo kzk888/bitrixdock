@@ -1,4 +1,4 @@
-version: '2.2'
+version: '2.1'
 
 volumes:
   site:
@@ -110,12 +110,8 @@ services:
             options:
                 max-size: "10m"
                 max-file: "10"
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 10
-                window: 120s
+        networks:
+            - bitrix
     adminer:
         image: dockette/adminer:full
         container_name: ${PROJECT}adminer
