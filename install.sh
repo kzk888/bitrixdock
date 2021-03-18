@@ -117,16 +117,6 @@ then
 		done
 		sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
 
-		# elastic search
-		echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
-		read ELASTIC_SEARCH_CHOOSE
-		until [[ $ELASTIC_SEARCH_CHOOSE != "Y" || $ELASTIC_SEARCH_CHOOSE != "N" ]]
-		do
-		    echo -e "\e[33mInstall Elastic Search? [Y/N]: \e[39m"
-		    read ELASTIC_SEARCH_CHOOSE
-		done
-		sed -i "s/#ELASTIC_SEARCH#/$ELASTIC_SEARCH_CHOOSE/g" $DOCKER_FOLDER_PATH/.env
-
 		###########################################################
 
 		echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
@@ -135,35 +125,35 @@ then
 		sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
 		echo -e "\e[32mDone \e[39m\n"
 
-		# set database name
-		echo -e "\e[33mSet MYSQL database name: \e[39m"
-		read MYSQL_DATABASE_NAME
-		until [[ ! -z "$MYSQL_DATABASE_NAME" ]]
-		do
-		    echo -e "\e[33mSet MYSQL database name: \e[39m"
-			read MYSQL_DATABASE_NAME
-		done
-		sed -i "s/#DATABASE_NAME#/$MYSQL_DATABASE_NAME/g" $DOCKER_FOLDER_PATH/.env
-
-		# set database user
-		echo -e "\e[33mSet MYSQL database user: \e[39m"
-		read MYSQL_DATABASE_USER
-		until [[ ! -z "$MYSQL_DATABASE_USER" ]]
-		do
-		    echo -e "\e[33mSet MYSQL database user: \e[39m"
-			read MYSQL_DATABASE_USER
-		done
-		sed -i "s/#DATABASE_USER#/$MYSQL_DATABASE_USER/g" $DOCKER_FOLDER_PATH/.env
-
-		# set database user password
-		echo -e "\e[33mSet MYSQL database user PASSWORD: \e[39m"
-		read MYSQL_DATABASE_USER_PASSWORD
-		until [[ ! -z "$MYSQL_DATABASE_USER_PASSWORD" ]]
-		do
-		    echo -e "\e[33mSet MYSQL database user PASSWORD: \e[39m"
-			read MYSQL_DATABASE_USER_PASSWORD
-		done
-		sed -i "s/#DATABASE_USER_PASSWORD#/$MYSQL_DATABASE_USER_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
+#		# set database name
+#		echo -e "\e[33mSet MYSQL database name: \e[39m"
+#		read MYSQL_DATABASE_NAME
+#		until [[ ! -z "$MYSQL_DATABASE_NAME" ]]
+#		do
+#		    echo -e "\e[33mSet MYSQL database name: \e[39m"
+#			read MYSQL_DATABASE_NAME
+#		done
+#		sed -i "s/#DATABASE_NAME#/$MYSQL_DATABASE_NAME/g" $DOCKER_FOLDER_PATH/.env
+#
+#		# set database user
+#		echo -e "\e[33mSet MYSQL database user: \e[39m"
+#		read MYSQL_DATABASE_USER
+#		until [[ ! -z "$MYSQL_DATABASE_USER" ]]
+#		do
+#		    echo -e "\e[33mSet MYSQL database user: \e[39m"
+#			read MYSQL_DATABASE_USER
+#		done
+#		sed -i "s/#DATABASE_USER#/$MYSQL_DATABASE_USER/g" $DOCKER_FOLDER_PATH/.env
+#
+#		# set database user password
+#		echo -e "\e[33mSet MYSQL database user PASSWORD: \e[39m"
+#		read MYSQL_DATABASE_USER_PASSWORD
+#		until [[ ! -z "$MYSQL_DATABASE_USER_PASSWORD" ]]
+#		do
+#		    echo -e "\e[33mSet MYSQL database user PASSWORD: \e[39m"
+#			read MYSQL_DATABASE_USER_PASSWORD
+#		done
+#		sed -i "s/#DATABASE_USER_PASSWORD#/$MYSQL_DATABASE_USER_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
 
 		echo -e "\e[32mRun DOCKER \e[39m"
 		docker-compose up -d
