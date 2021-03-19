@@ -113,6 +113,13 @@ then
 
     echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
     docker-compose up -d
+
+    sleep 10
+
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" && \
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"
+
+    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
   else
     cd $DOCKER_FOLDER_PATH
     echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
@@ -165,7 +172,7 @@ then
     cd $DOCKER_FOLDER_PATH && \
     docker-compose stop web_server && \
     docker-compose rm -f web_server && \
-    # docker-compose build web_server && \
+    docker-compose build web_server && \
     docker-compose up -d
 
     echo -e "\n\e[33mConfiguring MySQL database \e[39m"
