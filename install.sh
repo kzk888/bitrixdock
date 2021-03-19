@@ -7,11 +7,11 @@ WORK_PATH=/var/www
 MYSQL_AUTH_FILE=/var/www/mysql_auth
 
 # choosing ACTION
-echo -e "\e[33mSelect action [I - installation, add new website; R - remove website from env]: \e[39m"
+echo -e "\e[33mSelect action: \nI - add new website;\nR - remove website;\nS - generate SSL letsencrypt for website;\nF - create FTP account to website;\e[39m"
 read ACTION
 until [[ $PHP_VERSION != "I" || $PHP_VERSION != "R" ]]
 do
-    echo -e "\e[33mSelect action [I - installation, add new website; R - remove website from env]: \e[39m"
+    echo -e "\e[33mSelect action: \nI - add new website;\nR - remove website;\nS - generate SSL letsencrypt for website;\nF - create FTP account to website;\e[39m"
     read ACTION
 done
 
