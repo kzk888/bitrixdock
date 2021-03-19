@@ -160,7 +160,7 @@ then
     DATABASE_NAME=$PROJECT_CLEARED_NAME"_db"
     DATABASE_USER=$PROJECT_CLEARED_NAME"_user"
     DATABASE_PASSWORD=$(openssl rand -base64 32)
-
+    sleep 5
     mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE DATABASE "$DATABASE_NAME";"
     mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE USER '"$DATABASE_USER"'@'localhost' IDENTIFIED BY '"$DATABASE_PASSWORD"';"
     mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "GRANT ALL PRIVILEGES ON "$DATABASE_NAME".* TO '"$DATABASE_USER"'@'localhost';"
