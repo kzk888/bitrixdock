@@ -97,11 +97,11 @@ then
     sed -i "s/#DATABASE_ROOT_PASSWORD#/$MYSQL_DATABASE_ROOT_PASSWORD/g" $DOCKER_FOLDER_PATH/.env
     echo -e "[client]\nuser=root\npassword="$MYSQL_DATABASE_ROOT_PASSWORD > $MYSQL_AUTH_FILE
 
-    echo -e "\e[32mRun DOCKER \e[39m\n"
+    echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
     docker-compose up -d
   else
     cd $DOCKER_FOLDER_PATH
-    echo -e "\e[32mRun DOCKER \e[39m\n"
+    echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
     docker-compose up -d
   fi
 

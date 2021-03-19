@@ -1,6 +1,5 @@
 FROM nginx:1.18
 
-RUN apt-get update && apt-get install -y apt-transport-https
 RUN add-apt-repository ppa:certbot/certbot
 RUN apt install python-certbot-nginx -y
 
