@@ -86,6 +86,20 @@ then
     fi
     sed -i "s/#PHP_VERSION#/$SELECTED_PHP_VERSION/g" $DOCKER_FOLDER_PATH/.env
 
+    # chosing MYSQL version
+    echo -e "\e[33mSelect MYSQL version [5.7, 8.0]: \e[39m"
+    read MYSQL_VERSION
+    until [[ $MYSQL_VERSION != "5.7" || $MYSQL_VERSION != "8.0" ]]
+    do
+        echo -e "\e[33mSelect MYSQL version [5.7, 8.0]: \e[39m"
+        read MYSQL_VERSION
+    done
+    SELECTED_MYSQL_VERSION=mysql57
+    if [[ $MYSQL_VERSION == "8.0" ]]; then
+      SELECTED_MYSQL_VERSION=php80
+    fi
+    sed -i "s/#DB_SERVER_TYPE#/$SELECTED_MYSQL_VERSION/g" $DOCKER_FOLDER_PATH/.env
+
     # set database root password
     echo -e "\e[33mSet MYSQL database ROOT PASSWORD: \e[39m"
     read MYSQL_DATABASE_ROOT_PASSWORD
