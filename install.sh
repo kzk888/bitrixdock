@@ -56,6 +56,7 @@ then
   #show message that all required packets installed
   echo -e "\n\e[32mAll required packets installed \e[39m\n\n"
 
+  # downloading docker from git source
   DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
   if [ ! -d "$DOCKER_FOLDER_PATH" ]
   then
@@ -66,7 +67,7 @@ then
     cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/ && \
     cd $DOCKER_FOLDER_PATH
 
-    echo -e "\n\e[33mDownloading docker-compose sources, copying environment setting file and starting configuration \e[39m"
+    echo -e "\n\e[33mCopy environment setting file and starting configuration \e[39m"
     cp -f .env_template .env && \
     echo -e "\e[32mDone \e[39m\n"
 
@@ -129,9 +130,7 @@ then
   #checking site name domain
   echo -e "\n\n\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
   read SITE_NAME
-
   domainRegex="(^([a-zA-Z0-9](([a-zA-Z0-9-]){0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{0,10}$)"
-
   until [[ $SITE_NAME =~ $domainRegex ]]
   do
       echo -e "\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
@@ -141,7 +140,6 @@ then
   #checking site installation type
   echo -e "\e[33mSite installation type? (C - clear install bitrixsetup.php / R - restore from backup): \e[39m"
   read INSTALLATION_TYPE
-
   until [[ $INSTALLATION_TYPE == [CR] ]]
   do
       echo -e "\e[33mSite installation type? (C - clear install bitrixsetup.php / R - restore from backup): \e[39m"
@@ -164,9 +162,9 @@ then
     cd /var/ && chmod -R 775 www/ && chown -R root:www-data www/
 
     echo -e "\n\e[33mConfiguring NGINX conf file \e[39m"
-    cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-    sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
-    sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf && \
+    cp -f $DOCKER_FOLDER_PATH/nginx/conf/default.conf_template $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf && \
+    sed -i "s/#SITE_NAME#/$SITE_NAME/g" $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf && \
+    sed -i "s|#SITE_PATH#|$WEBSITE_FILES_PATH|g" $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf && \
     echo -e "\e[32mDone \e[39m\n"
 
     cd $DOCKER_FOLDER_PATH && \
@@ -182,9 +180,9 @@ then
     DATABASE_USER=$PROJECT_CLEARED_NAME"_user"
     DATABASE_PASSWORD=$(openssl rand -base64 32)
     sleep 5
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE DATABASE "$DATABASE_NAME";"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE USER '"$DATABASE_USER"'@'localhost' IDENTIFIED BY '"$DATABASE_PASSWORD"';"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "GRANT ALL PRIVILEGES ON "$DATABASE_NAME".* TO '"$DATABASE_USER"'@'localhost';"
+    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE DATABASE $DATABASE_NAME;"
+    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE USER '$DATABASE_USER'@'localhost' IDENTIFIED BY '$DATABASE_PASSWORD';"
+    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "GRANT ALL PRIVILEGES ON $DATABASE_NAME.* TO '$DATABASE_USER'@'localhost';"
     mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "FLUSH PRIVILEGES;"
 
     echo -e "\e[33mDatabase name: "$DATABASE_NAME" \e[39m"
@@ -217,7 +215,7 @@ then
     echo -e "\e[32mWebsite folder removed \e[39m\n"
 
     DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
-    rm -rf $DOCKER_FOLDER_PATH/nginx/conf/sites/$SITE_NAME.conf
+    rm -rf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf
 
     cd $DOCKER_FOLDER_PATH && \
     docker-compose stop web_server && \
