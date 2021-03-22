@@ -115,12 +115,12 @@ then
     echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
     docker-compose up -d
 
-    sleep 10
-
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
-
-    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
+#    sleep 10
+#
+#    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
+#    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
+#
+#    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
   else
     cd $DOCKER_FOLDER_PATH
     echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
@@ -128,10 +128,10 @@ then
 
     sleep 10
 
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
-
-    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
+#    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
+#    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
+#
+#    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
   fi
 
   #checking site name domain
@@ -236,14 +236,14 @@ then
 
         if [[ $SSL_INSTALL_ACTION == "Y" ]]
         then
-            docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y"  > /dev/null 2>&1 && \
-            docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"  > /dev/null 2>&1 && \
+#            docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y"  > /dev/null 2>&1 && \
+#            docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"  > /dev/null 2>&1 && \
             docker exec -it darbit_docker_webserver /bin/bash -c "certbot --nginx -d $SITE_NAME -d www.$SITE_NAME"
 
             DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
             mv $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf.old && \
             docker cp darbit_docker_webserver:/etc/nginx/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/ && \
-            docker cp darbit_docker_webserver:/etc/letsencrypt/ /var/www/bitrixdock/nginx/letsencrypt/
+            docker cp darbit_docker_webserver:/etc/letsencrypt/ $DOCKER_FOLDER_PATH/nginx/letsencrypt/
         fi
     fi
   fi
