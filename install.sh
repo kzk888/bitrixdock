@@ -139,6 +139,15 @@ then
       read INSTALLATION_TYPE
   done
 
+  #checking site installation type
+  echo -e "\e[33mDo you want install SSL from letsencrypt? (Y/N): \e[39m"
+  read SSL_INSTALL_ACTION
+  until [[ $SSL_INSTALL_ACTION != "Y" || $SSL_INSTALL_ACTION != "N" ]]
+  do
+      echo -e "\e[33mDo you want install SSL from letsencrypt? (Y/N): \e[39m"
+      read SSL_INSTALL_ACTION
+  done
+
   #checking is site directory exist
   WORK_PATH_WEBSITE=$WORK_PATH"/bitrix/"
   if [ ! -d "$WORK_PATH_WEBSITE" ]
@@ -165,6 +174,28 @@ then
     docker-compose rm -f web_server && \
     docker-compose build web_server && \
     docker-compose up -d
+
+    if [[ $SSL_INSTALL_ACTION == "Y" ]]
+    then
+        echo -e "\e[33mPrepare to sending request to generate certificate for domains - $SITE_NAME, www.$SITE_NAME (Attention! Be sure that domain www.$SITE_NAME is correctly setup in domain control panel with A or CNAME dns record) \e[39m"
+        echo -e "\e[33mIs domains settings correct setup in domain control panel? (Y/N): \e[39m"
+        read IS_CORRECT_DOMAIN
+        until [[ $IS_CORRECT_DOMAIN != "Y" || $IS_CORRECT_DOMAIN != "N" ]]
+        do
+            echo -e "\e[33mIs domains settings correct setup in domain control panel? (Y/N): \e[39m"
+            read IS_CORRECT_DOMAIN
+        done
+
+        if [[ $SSL_INSTALL_ACTION == "Y" ]]
+        then
+            docker exec -it darbit_docker_webserver /bin/bash -c "certbot --nginx -d $SITE_NAME -d www.$SITE_NAME"
+
+            DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
+            mv $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf.old && \
+            docker cp darbit_docker_webserver:/etc/nginx/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/ && \
+            docker cp darbit_docker_webserver:/etc/letsencrypt/ $DOCKER_FOLDER_PATH/nginx/letsencrypt/
+        fi
+    fi
 
     echo -e "\n\e[33mConfiguring MySQL database \e[39m"
 
