@@ -117,14 +117,21 @@ then
 
     sleep 10
 
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" && \
-    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
 
     echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
   else
     cd $DOCKER_FOLDER_PATH
     echo -e "\n\e[32mStarting DOCKER containers \e[39m\n"
     docker-compose up -d
+
+    sleep 10
+
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
+    docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y" > /dev/null 2>&1
+
+    echo -e "\n\e[32mcertbot installed on nginx container \e[39m\n"
   fi
 
   #checking site name domain
@@ -180,16 +187,65 @@ then
     DATABASE_USER=$PROJECT_CLEARED_NAME"_user"
     DATABASE_PASSWORD=$(openssl rand -base64 32)
     sleep 5
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE DATABASE $DATABASE_NAME;"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE USER '$DATABASE_USER'@'localhost' IDENTIFIED BY '$DATABASE_PASSWORD';"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "GRANT ALL PRIVILEGES ON $DATABASE_NAME.* TO '$DATABASE_USER'@'localhost';"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "FLUSH PRIVILEGES;"
+    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "CREATE DATABASE $DATABASE_NAME; CREATE USER '$DATABASE_USER'@'%' IDENTIFIED BY '$DATABASE_PASSWORD'; GRANT ALL PRIVILEGES ON $DATABASE_NAME.* TO '$DATABASE_USER'@'%'; FLUSH PRIVILEGES;"
 
+    echo -e "\e[33mDatabase server: db \e[39m"
     echo -e "\e[33mDatabase name: "$DATABASE_NAME" \e[39m"
     echo -e "\e[33mDatabase user: "$DATABASE_USER" \e[39m"
     echo -e "\e[33mDatabase password: "$DATABASE_PASSWORD" \e[39m"
   else
     echo -e "\e[31m    By path $WEBSITE_FILES_PATH website exist. Please remove folder and restart installation script. \e[39m"
+  fi
+elif [[ $ACTION == "S" ]]
+then
+  #checking site name domain
+  echo -e "\n\n\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
+  read SITE_NAME
+  domainRegex="(^([a-zA-Z0-9](([a-zA-Z0-9-]){0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{0,10}$)"
+  until [[ $SITE_NAME =~ $domainRegex ]]
+  do
+      echo -e "\e[33mEnter site name (websitename.domain | example: mail.ru): \e[39m"
+      read SITE_NAME
+  done
+
+  WEBSITE_FILES_PATH=$WORK_PATH/bitrix/$SITE_NAME
+  #checking is site directory exist
+  if [ ! -d "$WEBSITE_FILES_PATH" ]
+  then
+    echo -e "\e[31m    By path $WEBSITE_FILES_PATH website not exist. Please, restart script and enter correct website name [example: mail.ru]. \e[39m"
+  else
+    #checking site installation type
+    echo -e "\e[33mDo you want install SSL from letsencrypt? (Y/N): \e[39m"
+    read SSL_INSTALL_ACTION
+    until [[ $SSL_INSTALL_ACTION != "Y" || $SSL_INSTALL_ACTION != "N" ]]
+    do
+        echo -e "\e[33mDo you want install SSL from letsencrypt? (Y/N): \e[39m"
+        read SSL_INSTALL_ACTION
+    done
+
+    if [[ $SSL_INSTALL_ACTION == "Y" ]]
+    then
+        echo -e "\e[33mPrepare to sending request to generate certificate for domains - $SITE_NAME, www.$SITE_NAME (Attention! Be sure that domain www.$SITE_NAME is correctly setup in domain control panel with A or CNAME dns record) \e[39m"
+        echo -e "\e[33mIs domains settings correct setup in domain control panel? (Y/N): \e[39m"
+        read IS_CORRECT_DOMAIN
+        until [[ $IS_CORRECT_DOMAIN != "Y" || $IS_CORRECT_DOMAIN != "N" ]]
+        do
+            echo -e "\e[33mIs domains settings correct setup in domain control panel? (Y/N): \e[39m"
+            read IS_CORRECT_DOMAIN
+        done
+
+        if [[ $SSL_INSTALL_ACTION == "Y" ]]
+        then
+            docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y"  > /dev/null 2>&1 && \
+            docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"  > /dev/null 2>&1 && \
+            docker exec -it darbit_docker_webserver /bin/bash -c "certbot --nginx -d $SITE_NAME -d www.$SITE_NAME"
+
+            DOCKER_FOLDER_PATH=$WORK_PATH/bitrixdock
+            mv $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/$SITE_NAME.conf.old && \
+            docker cp darbit_docker_webserver:/etc/nginx/conf.d/$SITE_NAME.conf $DOCKER_FOLDER_PATH/nginx/conf/conf.d/ && \
+            docker cp darbit_docker_webserver:/etc/letsencrypt/ /var/www/bitrixdock/nginx/letsencrypt/
+        fi
+    fi
   fi
 elif [[ $ACTION == "R" ]]
 then
@@ -229,8 +285,7 @@ then
     DATABASE_NAME=$PROJECT_CLEARED_NAME"_db"
     DATABASE_USER=$PROJECT_CLEARED_NAME"_user"
 
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "DROP DATABASE "$DATABASE_NAME";"
-    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "DROP USER '"$DATABASE_USER"'@'localhost';"
+    mysql --defaults-extra-file=$MYSQL_AUTH_FILE -P 3306 --protocol=tcp -e "DROP DATABASE $DATABASE_NAME; DROP USER '$DATABASE_USER'@'%';"
 
     echo -e "\e[32mWebsite database and user removed \e[39m\n"
   fi
