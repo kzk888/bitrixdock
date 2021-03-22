@@ -236,7 +236,7 @@ then
 
         if [[ $SSL_INSTALL_ACTION == "Y" ]]
         then
-#            docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y"  > /dev/null 2>&1 && \
+#            docker exec -it darbit_docker_webserver /bin/bash -c "apt-get update -y" > /dev/null 2>&1 && \
 #            docker exec -it darbit_docker_webserver /bin/bash -c "apt install python-certbot-nginx -y"  > /dev/null 2>&1 && \
             docker exec -it darbit_docker_webserver /bin/bash -c "certbot --nginx -d $SITE_NAME -d www.$SITE_NAME"
 
