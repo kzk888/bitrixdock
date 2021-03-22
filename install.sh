@@ -177,7 +177,7 @@ then
     cd $DOCKER_FOLDER_PATH && \
     docker-compose stop web_server && \
     docker-compose rm -f web_server && \
-    #docker-compose build web_server && \
+    docker-compose build web_server && \
     docker-compose up -d
 
     echo -e "\n\e[33mConfiguring MySQL database \e[39m"
@@ -276,7 +276,7 @@ then
     cd $DOCKER_FOLDER_PATH && \
     docker-compose stop web_server && \
     docker-compose rm -f web_server && \
-    #docker-compose build web_server && \
+    docker-compose build web_server && \
     docker-compose up -d
 
     echo -e "\e[32mWebsite nginx conf removed \e[39m\n"
