@@ -8,6 +8,6 @@ COPY letsencrypt/ /etc/letsencrypt/
 
 RUN usermod -u 1000 www-data
 
-CMD ["nginx", "certbot"]
+CMD ["nginx"]
 
 EXPOSE 80 443
